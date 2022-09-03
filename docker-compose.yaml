@@ -1,0 +1,45 @@
+version: "3.3"
+services:
+  ####################### db ###############################
+  botbinanceuni-transactions-db:
+    container_name: botbinanceuni-transactions-db
+    restart: always
+    build:
+        context: ./postgres
+        dockerfile: ./Dockerfile
+    volumes:
+         - db_vol:/var/lib/postgresql/data
+    expose:
+        - "5432"
+  ####################### api ###############################
+  botbinanceuni-transactions-api:
+    container_name: botbinanceuni-transactions-api
+    restart: always
+    build:
+        context: ./nodejs
+        dockerfile: ./Dockerfile
+    # command: npm start
+    volumes:
+      - ./nodejs/code/:/nodejs/code/
+    #  - /nodejs/node_modules
+    ports:
+      - "3000"
+    depends_on:
+      - botbinanceuni-transactions-db
+
+  ####################### nginx ###############################
+  botbinanceuni-transactions-nginx:
+    restart: always
+    build:
+        context: ./nginx
+        dockerfile: ./Dockerfile
+    container_name: botbinanceuni-transactions-nginx
+    volumes:
+        - static_vol:/var/www/html/static
+    ports:
+        - "3040:80"
+    depends_on:
+        - botbinanceuni-transactions-api
+volumes:
+    db_vol:
+    static_vol:
